@@ -1,0 +1,120 @@
+<project name="HBasePhoenixLoader" default="build" basedir=".">
+
+    <property name="lib.dir" value="lib"/>
+    <property name="logs.dir" value="logs"/>
+    <property name="classes.dir" value="classes"/>
+    <property name="dist.dir" value="dist"/>
+	<property name="hbase.data.dir" value="sgdata"/>
+	<property name="hdfs.data.dir" value="data"/>
+	<property name="scripts.dir" value="scripts"/>
+	<property name="config.dir" value="config"/>
+    <property name="app.name" value="HBasePhoenixLoader"/>
+    
+    <path id="HBasePhoenixLoader.classpath">
+        <pathelement location="bin"/>
+    	<pathelement location="${lib.dir}/opencsv-2.0.jar"/>
+    	<pathelement location="${lib.dir}/commons-cli-1.2.jar"/>
+    	<pathelement location="${lib.dir}/commons-collections-3.2.1.jar"/>
+    	<pathelement location="${lib.dir}/commons-configuration-1.6.jar"/>
+    	<pathelement location="${lib.dir}/commons-io-2.1.jar"/>
+    	<pathelement location="${lib.dir}/commons-el-1.0.jar"/>
+    	<pathelement location="${lib.dir}/commons-logging-1.1.1.jar"/>
+    	<pathelement location="${lib.dir}/commons-lang-2.5.jar"/>
+    	<pathelement location="${lib.dir}/commons-pool-1.5.5.jar"/>
+    	<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
+    	<pathelement location="${lib.dir}/commons-math-2.1.jar"/>
+    	<pathelement location="${lib.dir}/guava-13.0.1.jar"/>
+    	<pathelement location="${lib.dir}/hadoop-auth-2.3.0-cdh5.0.1-1.0.0.jar"/>
+    	<pathelement location="${lib.dir}/hadoop-client-2.3.0-cdh5.0.1-1.0.0.jar"/>
+    	<pathelement location="${lib.dir}/hadoop-common-2.3.0-cdh5.0.1-1.0.0.jar"/>
+    	<pathelement location="${lib.dir}/hadoop-dist-2.3.0-cdh5.0.1-1.0.0.jar"/>
+    	<pathelement location="${lib.dir}/hadoop-hdfs-2.3.0-cdh5.0.1-1.0.0.jar"/>    	
+    	<pathelement location="${lib.dir}/hbase-client-0.98.4-1.0.4.jar"/>
+    	<pathelement location="${lib.dir}/hbase-common-0.98.4-1.0.4.jar"/>
+    	<pathelement location="${lib.dir}/protobuf-java-2.5.0.jar"/>    	
+    	<pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
+    	<pathelement location="${lib.dir}/slf4j-log4j12-1.4.3.jar"/>
+    	<pathelement location="${lib.dir}/slf4j-api-1.4.3.jar"/>
+    	<pathelement location="${lib.dir}/zookeeper-3.4.5.jar"/>
+    	<pathelement location="${lib.dir}/jedis-2.1.0.jar"/>
+    </path>
+
+    <target name="clean">
+        <echo>********Cleaning up... ************</echo>
+        <echo>********Deleting ${classes.dir}************</echo>
+        <delete dir="${classes.dir}"/>
+        <echo>********Deleting ${dist.dir}************</echo>
+        <delete dir="${dist.dir}"/>
+    </target>
+    
+    <target name="prepare" depends="clean">
+        <echo>********Preparing... ************</echo>
+        <echo>********Creating ${classes.dir}************</echo>
+        <mkdir dir="${classes.dir}"/>
+        <echo>********Creating ${dist.dir}************</echo>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+    
+    <target name="compile" depends="prepare">
+        <echo>******** compiling src classes to ${classes.dir}************</echo>
+        <javac srcdir="${basedir}/src" destdir="${classes.dir}">
+            <classpath refid="HBasePhoenixLoader.classpath"/>
+        </javac>
+    </target>
+
+   <target name="build" depends="compile">
+        <echo>******** Building ${dist.dir}/${app.name}.jar************</echo>
+        <jar destfile="${dist.dir}/${app.name}.jar">
+            <fileset dir="${classes.dir}"/>
+        </jar>
+   	
+	    <echo>******** Copying ${basedir}/log4j.properties to ${dist.dir}/log4j.properties************</echo>
+	    <copy todir="${dist.dir}">
+	        <fileset dir="${basedir}"/>
+	    </copy>
+   	
+        <echo>******** Copying ${basedir}/sgdata to ${dist.dir}/sgdata************</echo>
+        <copy todir="${dist.dir}/sgdata">
+            <fileset dir="${hbase.data.dir}"/>
+        </copy>
+   	
+    	<echo>******** Copying ${basedir}/data to ${dist.dir}/data************</echo>
+    	<copy todir="${dist.dir}/data">
+        	<fileset dir="${hdfs.data.dir}"/>
+    	</copy>
+
+        <echo>******** Copying ${basedir}/logs to ${dist.dir}/logs************</echo>
+        <copy todir="${dist.dir}/logs">
+            <fileset dir="${logs.dir}"/>
+        </copy>
+
+        <echo>******** Copying ${basedir}/scripts to ${dist.dir}/scripts************</echo>
+        <copy todir="${dist.dir}/scripts">
+            <fileset dir="${scripts.dir}"/>
+        </copy>
+
+        <echo>******** Copying ${basedir}/config to ${dist.dir}/config************</echo>
+        <copy todir="${dist.dir}/config">
+            <fileset dir="${config.dir}"/>
+        </copy>
+
+        <echo>******** Copying required libraries to ${dist.dir}/lib************</echo>
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${lib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <echo>******** Copying ${dist.dir} to ${dist.dir}/${app.name}************</echo>
+        <mkdir dir="${dist.dir}/${app.name}"/>
+        <move todir="${dist.dir}/${app.name}">
+            <fileset dir="${dist.dir}"/>
+        </move>
+        
+        <echo>******** Zipping ${dist.dir}/${app.name} to ${dist.dir}/${app.name}.zip************</echo>
+        <zip file="${dist.dir}/${app.name}.zip">
+            <zipfileset dir="${dist.dir}/${app.name}" prefix="">
+                <exclude name="${app.name}Test.jar"/>
+            </zipfileset>
+        </zip>
+    </target>
+</project>

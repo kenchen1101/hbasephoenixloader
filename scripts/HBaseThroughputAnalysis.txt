@@ -1,0 +1,87 @@
+#While running the test run the following command to collect hbase data stats
+watch -n 10 '/home/vikuser/current/bigdata-hadoop/hadoop/hadoop/bin/hadoop fs -du  /hbase >> hadoop_dfs_hbase'
+
+#Separate out all directories
+grep 'archive' hadoop_dfs_hbase > archive
+grep 'hbase.id' hadoop_dfs_hbase > hbase.id
+grep 'hbase.version' hadoop_dfs_hbase >hbase.version
+grep HT1 hadoop_dfs_hbase > HT1
+grep HT2 hadoop_dfs_hbase > HT2
+grep HT3 hadoop_dfs_hbase > HT3
+grep HT4 hadoop_dfs_hbase > HT4
+grep '.logs' hadoop_dfs_hbase| grep -v old > logs
+grep '.oldlogs' hadoop_dfs_hbase > oldlogs
+grep 'META' hadoop_dfs_hbase > META
+grep 'ROOT' hadoop_dfs_hbase > ROOT
+grep 'SYSTEM.TABLE' hadoop_dfs_hbase > SYSTEM.TABLE
+grep 'tmp' hadoop_dfs_hbase > tmp
+grep SYNTH_TESTS_HBASE hadoop_dfs_hbase > SYNTH_TESTS_HBASE
+grep SYNTH_TESTS_PHOENIX hadoop_dfs_hbase >  SYNTH_TESTS_PHOENIX 
+grep SYNTH_TESTS_RESULTS hadoop_dfs_hbase > SYNTH_TESTS_RESULTS
+
+#get the size of each directory 
+cat archive | awk '{print $1}' > archive.1 
+cat hbase.id  | awk '{print $1}' > hbase.id.1
+cat hbase.version  | awk '{print $1}' > hbase.version.1
+cat HT1  | awk '{print $1}' > HT1.1
+cat HT2  | awk '{print $1}' > HT2.1
+cat HT3  | awk '{print $1}' > HT3.1
+cat HT4  | awk '{print $1}' > HT4.1
+cat logs  | awk '{print $1}' > logs.1
+cat oldlogs  | awk '{print $1}' > oldlogs.1
+cat META  | awk '{print $1}' > META.1
+cat ROOT  | awk '{print $1}' > ROOT.1
+cat SYSTEM.TABLE  | awk '{print $1}' > SYSTEM.TABLE.1
+cat tmp  | awk '{print $1}' > tmp.1
+cat SYNTH_TESTS_HBASE  | awk '{print $1}' > SYNTH_TESTS_HBASE.1
+cat SYNTH_TESTS_PHOENIX  | awk '{print $1}' > SYNTH_TESTS_PHOENIX.1
+cat SYNTH_TESTS_RESULTS  | awk '{print $1}' > SYNTH_TESTS_RESULTS.1
+
+#get the xgraph files 
+cat archive | awk '{ctr=ctr+1}{print ctr,$1}' > archive.2 
+cat hbase.id  | awk '{ctr=ctr+1}{print ctr,$1}' > hbase.id.2
+cat hbase.version  | awk '{ctr=ctr+1}{print ctr,$1}' > hbase.version.2
+cat HT1  | awk '{ctr=ctr+1}{print ctr,$1}' > HT1.2
+cat HT2  | awk '{ctr=ctr+1}{print ctr,$1}' > HT2.2
+cat HT3  | awk '{ctr=ctr+1}{print ctr,$1}' > HT3.2
+cat HT4  | awk '{ctr=ctr+1}{print ctr,$1}' > HT4.2
+cat logs  | awk '{ctr=ctr+1}{print ctr,$1}' > logs.2
+cat oldlogs  | awk '{ctr=ctr+1}{print ctr,$1}' > oldlogs.2
+cat META  | awk '{ctr=ctr+1}{print ctr,$1}' > META.2
+cat ROOT  | awk '{ctr=ctr+1}{print ctr,$1}' > ROOT.2
+cat SYSTEM.TABLE  | awk '{ctr=ctr+1}{print ctr,$1}' > SYSTEM.TABLE.2
+cat tmp  | awk '{ctr=ctr+1}{print ctr,$1}' > tmp.2
+cat SYNTH_TESTS_HBASE  | awk '{ctr=ctr+1}{print ctr,$1}' > SYNTH_TESTS_HBASE.2
+cat SYNTH_TESTS_PHOENIX  | awk '{ctr=ctr+1}{print ctr,$1}' > SYNTH_TESTS_PHOENIX.2
+cat SYNTH_TESTS_RESULTS  | awk '{ctr=ctr+1}{print ctr,$1}' > SYNTH_TESTS_RESULTS.2
+
+# get size of all directories in a row at any particular interval
+paste archive.1 hbase.id.1 hbase.version.1 HT1.1 HT2.1 HT3.1 HT4.1 logs.1 oldlogs.1 META.1 ROOT.1 SYSTEM.TABLE.1 tmp.1 SYNTH_TESTS_HBASE.1 SYNTH_TESTS_PHOENIX.1 SYNTH_TESTS_RESULTS.1 > hadoop_dfs_hbase_all
+paste HT1.1 HT2.1 HT3.1 HT4.1 logs.1 > hadoop_dfs_hbase_ht_logs
+
+
+#Total data in a particular interval
+cat hadoop_dfs_hbase_all | awk '{print $1+$2+$3+$4+$5+$6+$7+$8+$9+$10+$11+$12+$13+$14+$15+$16}' > hbase_data_size
+cat hadoop_dfs_hbase_ht_logs | awk '{print $1+$2+$3+$4+$5 }' > hbase_data_size_ht_logs
+
+#Total incremental data in a particular interval
+cat hbase_data_size | awk '{print $1-prev}{prev=$1}' > hbase_data_size_incr
+#replace all negative values with 0
+cat hbase_data_size_incr | awk '{if ($1<0) print 0; else print $1}'  > hbase_data_size_incr_positive
+cat hbase_data_size_incr_positive | awk '{ctr=ctr+1}{print ctr, $1}' > hbase_data_size_incr_positive.1
+cat hbase_data_size_incr_positive.1 | awk '{mb=$2/1048576}{print $1,mb}' > hbase_data_mb
+xgraph hbase_data_mb
+
+cat hbase_data_size_ht_logs | awk '{print $1-prev}{prev=$1}' > hbase_data_size_ht_logs_incr
+#replace all negative values with 0
+cat hbase_data_size_ht_logs_incr | awk '{if ($1<0) print 0; else print $1}'  > hbase_data_size_ht_logs_incr_positive
+cat hbase_data_size_ht_logs_incr_positive | awk '{ctr=ctr+1}{print ctr, $1}' > hbase_data_size_ht_logs_incr_positive.1
+cat hbase_data_size_ht_logs_incr_positive.1 | awk '{mb=$2/1048576}{print $1,mb}' > hbase_data_ht_logs_mb
+xgraph hbase_data_ht_logs_mb
+
+cat hbase_data_ht_logs_mb | awk '{sum=sum+$2}END{print sum}'
+940885
+wc -l hbase_data_ht_logs_mb
+3321 hbase_data_ht_logs_mb
+Avg = 940885/3321 = 283 MB/sec 
+With 6 DataNodes and ReplFactor = 3, we expect 6*120/3 = 240 MB/sec
