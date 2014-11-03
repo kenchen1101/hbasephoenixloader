@@ -16,7 +16,6 @@ public class HbaseConnectionManager {
   private static final String JDBC_DRIVER_CLASS = "org.apache.phoenix.jdbc.PhoenixDriver";
   private static final String JDBC_URL_PREFIX = "jdbc:phoenix:";
   private static final String hbaseMasterHost = HbaseConnectionParams.getHbaseMasterHost();
-  private static Connection hcon = null;
   
   public HbaseConnectionManager() {
     MyLogger.mylogger.info("Initializing HBase Connection Pool for "+hbaseMasterHost);
@@ -31,8 +30,7 @@ public class HbaseConnectionManager {
    //     HbaseConnectionParams.getHbasePort());
     //Initialize Hconnection
 	  Configuration conf = HBaseConfiguration.create();
-    hcon=createConnection(hbaseMasterHost,conf);
-		return hcon;
+          return (createConnection(hbaseMasterHost,conf));
 	}
 	
   private Connection createConnection(String zkQuorum, Configuration conf) {
